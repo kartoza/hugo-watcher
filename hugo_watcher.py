@@ -3,6 +3,7 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 import os
+import stat
 import shutil
 
 if __name__ == "__main__":
@@ -51,6 +52,11 @@ def check_content_exists():
                 destination = shutil.copyfile(
                         os.path.join(content_template_path, file), 
                         os.path.join(content_path, file)) 
+        for root, dirs, files in os.walk("path"):
+            for d in dirs:
+                os.chmod(os.path.join(root, d), stat.S_IWOTH)
+            for f in files:
+                os.chmod(os.path.join(root, f), stat.S_IWOTH)
 
 
 def check_static_exists():
@@ -68,7 +74,12 @@ def check_static_exists():
                 print("Copying file:", file)
                 destination = shutil.copyfile(
                         os.path.join(static_template_path, file), 
-                        os.path.join(static_path, file)) 
+                        os.path.join(static_path, file))
+        for root, dirs, files in os.walk("path"):
+            for d in dirs:
+                os.chmod(os.path.join(root, d), stat.S_IWOTH)
+            for f in files:
+                os.chmod(os.path.join(root, f), stat.S_IWOTH)
 
 def run_hugo():
     check_static_exists()
