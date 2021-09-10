@@ -45,6 +45,12 @@ a.page-anchor {
 }
 */
 
+ul.menu-list {
+  /* remove bullets from unstyled lists in content
+  sections with the bulma menu-list class defined */
+  list-style-type: none;
+}
+
 .modal-effect {
   opacity: 1;
   animation: fade 1s linear;
