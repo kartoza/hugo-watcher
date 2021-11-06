@@ -12,13 +12,18 @@ if __name__ == "__main__":
     ignore_directories = False
     case_sensitive = True
     my_event_handler = PatternMatchingEventHandler(patterns, ignore_patterns, ignore_directories, case_sensitive)
-
-content_template_path = "/src/content_template/"
+# Embedded in hugo watcher to have at least one default site
+# Currently based on the hugo-clarity theme
+site_template_path = "/site_template/"
+# Embedded in hugo watcher to have at least one default theme
+# Currently based on the hugo-clarity theme
+themes_template_path = "/themes_template/"
+# mounted as a docker volume - user can replace this content as needed
+# all content is removed we will replace it with the default site example
+site_path = "/src"
 # mounted as a docker volume
-content_path = "/src/content/"
-static_template_path = "/src/static_template/"
-# mounted as a docker volume
-static_path = "/src/static/"
+# User can drop more themes into the shared themes mount as needed
+themes_path = "/themes/"
 
 def on_created(event):
     print(f"{event.src_path} has been created!")
@@ -37,21 +42,43 @@ def on_moved(event):
     run_hugo()
 
 
-def check_content_exists():
-    if not os.listdir(content_path):
-        print("Content directory is empty - copying in content_template structure")
-        files = os.listdir( content_template_path )
+def check_site_exists():
+    if not os.listdir(site_path):
+        print("Site directory is empty - copying in site_template structure")
+        files = os.listdir( site_template_path )
         for file in files:
-            if os.path.isdir(os.path.join(content_template_path, file)):
+            if os.path.isdir(os.path.join(site_template_path, file)):
                 print("Copying dir:", file)
                 destination = shutil.copytree(
-                        os.path.join(content_template_path, file), 
-                        os.path.join(content_path, file)) 
+                        os.path.join(site_template_path, file), 
+                        os.path.join(site_path, file)) 
             else:
                 print("Copying file:", file)
                 destination = shutil.copyfile(
-                        os.path.join(content_template_path, file), 
-                        os.path.join(content_path, file)) 
+                        os.path.join(site_template_path, file), 
+                        os.path.join(site_path, file)) 
+        for root, dirs, files in os.walk("path"):
+            for d in dirs:
+                os.chmod(os.path.join(root, d), stat.S_IWOTH)
+            for f in files:
+                os.chmod(os.path.join(root, f), stat.S_IWOTH)
+
+def check_themes_exists():
+    # Copy over the theme files if not present
+    if not os.listdir(themes_path):
+        print("Themes directory is empty - copying in themes_template structure")
+        files = os.listdir( themes_template_path )
+        for file in files:
+            if os.path.isdir(os.path.join(themes_template_path, file)):
+                print("Copying dir:", file)
+                destination = shutil.copytree(
+                        os.path.join(themes_template_path, file), 
+                        os.path.join(themes_path, file)) 
+            else:
+                print("Copying file:", file)
+                destination = shutil.copyfile(
+                        os.path.join(themes_template_path, file), 
+                        os.path.join(themes_path, file))
         for root, dirs, files in os.walk("path"):
             for d in dirs:
                 os.chmod(os.path.join(root, d), stat.S_IWOTH)
@@ -59,37 +86,17 @@ def check_content_exists():
                 os.chmod(os.path.join(root, f), stat.S_IWOTH)
 
 
-def check_static_exists():
-    # Copy over the static files (css, js, img etc) if not present
-    if not os.listdir(static_path):
-        print("Static directory is empty - copying in static_template structure")
-        files = os.listdir( static_template_path )
-        for file in files:
-            if os.path.isdir(os.path.join(static_template_path, file)):
-                print("Copying dir:", file)
-                destination = shutil.copytree(
-                        os.path.join(static_template_path, file), 
-                        os.path.join(static_path, file)) 
-            else:
-                print("Copying file:", file)
-                destination = shutil.copyfile(
-                        os.path.join(static_template_path, file), 
-                        os.path.join(static_path, file))
-        for root, dirs, files in os.walk("path"):
-            for d in dirs:
-                os.chmod(os.path.join(root, d), stat.S_IWOTH)
-            for f in files:
-                os.chmod(os.path.join(root, f), stat.S_IWOTH)
 
 def run_hugo():
-    check_static_exists()
-    check_content_exists()
-    print("Content directory is not empty")
-    cp = subprocess.run(["/bin/hugo"])
+    check_site_exists()
+    check_themes_exists()
+    print("Running hugo")
+    #TODO - add some logit to write the active theme name to a file and use that rather than hardcoded name
+    cp = subprocess.run(["/bin/hugo", "--destination", "/public", "--themesDir", "/themes", "--theme", "hugo-clarity"])
 
 
-check_static_exists()
-check_content_exists()
+check_site_exists()
+check_themes_exists()
 run_hugo()
 
 my_event_handler.on_created = on_created
@@ -98,7 +105,8 @@ my_event_handler.on_modified = on_modified
 my_event_handler.on_moved = on_moved
 go_recursively = True
 my_observer = Observer()
-my_observer.schedule(my_event_handler, content_path, recursive=go_recursively)
+my_observer.schedule(my_event_handler, site_path, recursive=go_recursively)
+my_observer.schedule(my_event_handler, themes_path, recursive=go_recursively)
 
 my_observer.start()
 try:

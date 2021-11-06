@@ -1,0 +1,4 @@
+[submodule "hugo-clarity"]
+	path = themes_template/hugo-clarity
+	url = https://github.com/chipzoller/hugo-clarity
+	branch = master
