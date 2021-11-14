@@ -15,7 +15,8 @@ you just need to tweak the provided templates.
 ## Environment Variables
 
 * DOMAIN: Use the environment variable DOMAIN to replace example.com in the
-  hugo theme template with your chosen domain name.
+  hugo theme template with your chosen domain name. Make sure to include the
+  protocol e.g. https://foo.org
 * THEME: Use the environment variable THEME to specify the name of a theme to
   use. By default the hugo-clarity theme is used if no THEME is specified. 
 

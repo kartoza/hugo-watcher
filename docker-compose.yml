@@ -29,9 +29,9 @@ services:
     # whenever a source file is changed.
     image: kartoza/hugo-watcher:latest
     environment:
-      - DOMAIN=localhost:8000
+      - DOMAIN=http://localhost:8000
       # If you comment out theme it will default to hugo-clarity
-      - THEME=elephants
+      #- THEME=elephants
     volumes:
       # This is non user editable, generated static html
       # will be placed here.

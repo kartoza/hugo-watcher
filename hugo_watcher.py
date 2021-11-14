@@ -29,6 +29,9 @@ site_template_path = os.path.join(
 # Normally mounted as a docker volume - user can replace this content as needed
 # all content is removed we will replace it with the default site example
 site_path = "/src"
+
+scan_lock = True
+
 # If the user has set a theme we override the default example site
 # with the one provided in the theme
 if os.environ.get('THEME'):
@@ -38,20 +41,24 @@ if os.environ.get('THEME'):
             'exampleSite')
 
 def on_created(event):
-    print(f"{event.src_path} has been created!")
-    run_hugo()
+    if not scan_lock:
+        print(f"{event.src_path} has been created!")
+        run_hugo()
 
 def on_deleted(event):
-    print(f"File / path deleted: {event.src_path}!")
-    run_hugo()
+    if not scan_lock:
+        print(f"File / path deleted: {event.src_path}!")
+        run_hugo()
 
 def on_modified(event):
-    print(f"{event.src_path} has been modified")
-    run_hugo()
+    if not scan_lock:
+        print(f"{event.src_path} has been modified")
+        run_hugo()
 
 def on_moved(event):
-    print(f"File moved {event.src_path} to {event.dest_path}")
-    run_hugo()
+    if not scan_lock:
+        print(f"File moved {event.src_path} to {event.dest_path}")
+        run_hugo()
 
 
 def check_site_exists():
@@ -71,27 +78,34 @@ def check_site_exists():
                 destination = shutil.copyfile(
                         os.path.join(site_template_path, file), 
                         os.path.join(site_path, file)) 
+
+        for root, dirs, files in os.walk(site_path):
+            for directory in dirs:
+                os.chmod(os.path.join(root, directory), stat.S_IWOTH)
+            for file in files:
+                os.chmod(os.path.join(root, file), stat.S_IWOTH)
                 # If the Env var DOMAIN is set (which should typically be the
                 # case), replace any instance of example.com in the template
                 # file contents
-                if os.environ.get('DOMAIN'):
-                    file_in = open(destination, "rt")
+                filename, file_extension = os.path.splitext(file)
+                print("Replacing example.com, example.org in :", file)
+                try:
+                    file_in = open(os.path.join(root, file), "rt")
                     contents = file_in.read()
-                    contents = contents.replace('example.com', os.environ.get('DOMAIN'))
-                    contents = contents.replace('example.org', os.environ.get('DOMAIN'))
+                    contents = contents.replace('https://example.com', os.environ.get('DOMAIN'))
+                    contents = contents.replace('https://example.org', os.environ.get('DOMAIN'))
+                    contents = contents.replace('http://example.com', os.environ.get('DOMAIN'))
+                    contents = contents.replace('http://example.org', os.environ.get('DOMAIN'))
                     file_in.close()
-                    file_out = open(destination, "wt")
+                    file_out = open(os.path.join(root, file), "wt")
                     file_out.write(contents)
                     file_out.close()
+                except Exception as ex:
+                    print (ex)
 
-        for root, dirs, files in os.walk("path"):
-            for d in dirs:
-                os.chmod(os.path.join(root, d), stat.S_IWOTH)
-            for f in files:
-                os.chmod(os.path.join(root, f), stat.S_IWOTH)
 
 def check_themes_exists():
-    # Copy over the theme files if not present
+    # Copy over the theme files from the theme dir if not present
     if not os.listdir(themes_path):
         print("Themes directory is empty - copying in themes_template structure")
         files = os.listdir( themes_template_path )
@@ -101,11 +115,11 @@ def check_themes_exists():
                 destination = shutil.copytree(
                         os.path.join(themes_template_path, file), 
                         os.path.join(themes_path, file)) 
-            else:
-                print("Copying file:", file)
-                destination = shutil.copyfile(
-                        os.path.join(themes_template_path, file), 
-                        os.path.join(themes_path, file))
+        else:
+            print("Copying file:", file)
+            destination = shutil.copyfile( 
+                    os.path.join(themes_template_path, file), 
+                    os.path.join(themes_path, file))
 
         for root, dirs, files in os.walk("path"):
             for d in dirs:
@@ -114,6 +128,7 @@ def check_themes_exists():
                 os.chmod(os.path.join(root, f), stat.S_IWOTH)
 
 def run_hugo():
+    scan_lock = True
     check_site_exists()
     check_themes_exists()
     if os.environ.get('THEME'):
@@ -126,6 +141,7 @@ def run_hugo():
         cp = subprocess.run([
             "/bin/hugo", "--destination", "/public", 
             "--themesDir", "/themes", "--theme", "hugo-clarity"])
+    scan_lock = False
 
 
 check_site_exists()
