@@ -19,6 +19,11 @@ you just need to tweak the provided templates.
 * THEME: Use the environment variable THEME to specify the name of a theme to
   use. By default the hugo-clarity theme is used if no THEME is specified. 
 
+Themes shipped by default include:
+
+* hugo-clarity (default)
+* elephants
+
 ## Adding themes
 
 To add a theme, you currently need to fork this repo, add a new git submodule

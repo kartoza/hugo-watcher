@@ -14,18 +14,28 @@ if __name__ == "__main__":
     case_sensitive = True
     my_event_handler = PatternMatchingEventHandler(
             patterns, ignore_patterns, ignore_directories, case_sensitive)
-# Embedded in hugo watcher to have at least one default site
-# Currently based on the hugo-clarity theme
-site_template_path = "/site_template/"
+# Normally mounted as a docker volume
+# User can drop more themes into the shared themes mount as needed
+themes_path = "/themes/"
 # Embedded in hugo watcher to have at least one default theme
 # Currently based on the hugo-clarity theme
 themes_template_path = "/themes_template/"
-# mounted as a docker volume - user can replace this content as needed
+# Embedded in hugo watcher to have at least one default site
+# Currently based on the hugo-clarity theme
+site_template_path = os.path.join(
+        themes_template_path,
+        'hugo-clarity',
+        'exampleSite')
+# Normally mounted as a docker volume - user can replace this content as needed
 # all content is removed we will replace it with the default site example
 site_path = "/src"
-# mounted as a docker volume
-# User can drop more themes into the shared themes mount as needed
-themes_path = "/themes/"
+# If the user has set a theme we override the default example site
+# with the one provided in the theme
+if os.environ.get('THEME'):
+    site_template_path = os.path.join(
+            themes_template_path, 
+            os.environ.get('THEME'),
+            'exampleSite')
 
 def on_created(event):
     print(f"{event.src_path} has been created!")
@@ -45,6 +55,8 @@ def on_moved(event):
 
 
 def check_site_exists():
+    # We take the site default content from the exampleSite directory
+    # of the active theme.
     if not os.listdir(site_path):
         print("Site directory is empty - copying in site_template structure")
         files = os.listdir( site_template_path )
@@ -59,6 +71,19 @@ def check_site_exists():
                 destination = shutil.copyfile(
                         os.path.join(site_template_path, file), 
                         os.path.join(site_path, file)) 
+                # If the Env var DOMAIN is set (which should typically be the
+                # case), replace any instance of example.com in the template
+                # file contents
+                if os.environ.get('DOMAIN'):
+                    file_in = open(destination, "rt")
+                    contents = file_in.read()
+                    contents = contents.replace('example.com', os.environ.get('DOMAIN'))
+                    contents = contents.replace('example.org', os.environ.get('DOMAIN'))
+                    file_in.close()
+                    file_out = open(destination, "wt")
+                    file_out.write(contents)
+                    file_out.close()
+
         for root, dirs, files in os.walk("path"):
             for d in dirs:
                 os.chmod(os.path.join(root, d), stat.S_IWOTH)
@@ -81,18 +106,6 @@ def check_themes_exists():
                 destination = shutil.copyfile(
                         os.path.join(themes_template_path, file), 
                         os.path.join(themes_path, file))
-                # If the Env var DOMAIN is set, replace
-                # any instance of example.com in the template 
-                # file contents
-                if os.environ.get('DOMAIN'):
-                    if mimetypes.guess_type()[0] == 'text/plain':
-                        file_in = open(destination, "rt")
-                        contents = file_in.read()
-                        contents = data.replace('example.com', os.environ.get('DOMAIN'))
-                        data.close()
-                        file_out = open(destination, "wt")
-                        file_out.write(data)
-                        file_out.close()
 
         for root, dirs, files in os.walk("path"):
             for d in dirs:
