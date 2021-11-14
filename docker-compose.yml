@@ -57,7 +57,7 @@ services:
       # If empty will be initially populated by hugo-watcher
       # adding the hugo-clarity theme by default
       # Place hugo themes here
-      - hugo_themes:/src/themes
+      - hugo_themes:/srv/themes
       # Mounted in file-browser and to Hugo for content (markdown)
       # If empty will be initially populated by hugo-watcher
       # adding the hugo-clarity sample site by default
