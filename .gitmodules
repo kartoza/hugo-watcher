@@ -4,4 +4,4 @@
 	branch = master
 [submodule "themes_template/elephants"]
 	path = themes_template/elephants
-	url = git@github.com:meibenny/elephants.git
+	url = https://github.com/meibenny/elephants.git
