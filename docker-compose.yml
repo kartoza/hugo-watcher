@@ -22,8 +22,6 @@ services:
       options:
         max-size: 200m
         max-file: '10'
-    depends_on:
-      - hugo-watcher
 
   hugo-watcher:
     # This service watches for changes in the static content
@@ -59,26 +57,20 @@ services:
       # If empty will be initially populated by hugo-watcher
       # adding the hugo-clarity theme by default
       # Place hugo themes here
-      - hugo_themes:/themes
+      - hugo_themes:/src/themes
       # Mounted in file-browser and to Hugo for content (markdown)
       # If empty will be initially populated by hugo-watcher
       # adding the hugo-clarity sample site by default
       # Only raw markdown should be put in here, hugo will generate 
       # the site from that.
-      - hugo_source:/src
+      - hugo_source:/srv/src
     user: root # FIXME
     ports:
-      - 8001:8000
-    networks:
-     - hugo-watcher
+      - 8001:80
     restart: unless-stopped
     logging:
       driver: json-file
       options:
         max-size: 200m
         max-file: '10'
-    depends_on:
-      - python-http
 
-networks:
- hugo-watcher:
