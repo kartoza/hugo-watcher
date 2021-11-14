@@ -28,7 +28,8 @@ services:
     # source files of the hugo site and rebuilds the site 
     # whenever a source file is changed.
     image: kartoza/hugo-watcher:latest
-    # No profiles specified, automatically started by nginx
+    environment:
+      - DOMAIN=localhost:8000
     volumes:
       # This is non user editable, generated static html
       # will be placed here.

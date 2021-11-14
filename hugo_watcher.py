@@ -5,13 +5,15 @@ from watchdog.events import PatternMatchingEventHandler
 import os
 import stat
 import shutil
+import mimetypes
 
 if __name__ == "__main__":
     patterns = ["*"]
     ignore_patterns = None
     ignore_directories = False
     case_sensitive = True
-    my_event_handler = PatternMatchingEventHandler(patterns, ignore_patterns, ignore_directories, case_sensitive)
+    my_event_handler = PatternMatchingEventHandler(
+            patterns, ignore_patterns, ignore_directories, case_sensitive)
 # Embedded in hugo watcher to have at least one default site
 # Currently based on the hugo-clarity theme
 site_template_path = "/site_template/"
@@ -79,20 +81,38 @@ def check_themes_exists():
                 destination = shutil.copyfile(
                         os.path.join(themes_template_path, file), 
                         os.path.join(themes_path, file))
+                # If the Env var DOMAIN is set, replace
+                # any instance of example.com in the template 
+                # file contents
+                if os.environ.get('DOMAIN'):
+                    if mimetypes.guess_type()[0] == 'text/plain':
+                        file_in = open(destination, "rt")
+                        contents = file_in.read()
+                        contents = data.replace('example.com', os.environ.get('DOMAIN'))
+                        data.close()
+                        file_out = open(destination, "wt")
+                        file_out.write(data)
+                        file_out.close()
+
         for root, dirs, files in os.walk("path"):
             for d in dirs:
                 os.chmod(os.path.join(root, d), stat.S_IWOTH)
             for f in files:
                 os.chmod(os.path.join(root, f), stat.S_IWOTH)
 
-
-
 def run_hugo():
     check_site_exists()
     check_themes_exists()
-    print("Running hugo")
-    #TODO - add some logit to write the active theme name to a file and use that rather than hardcoded name
-    cp = subprocess.run(["/bin/hugo", "--destination", "/public", "--themesDir", "/themes", "--theme", "hugo-clarity"])
+    if os.environ.get('THEME'):
+        print("Running hugo with theme ", os.environ.get('THEME'))
+        cp = subprocess.run([
+            "/bin/hugo", "--destination", "/public", 
+            "--themesDir", "/themes", "--theme", os.environ.get('THEME')])
+    else:
+        print("Running hugo with theme hugo-clarity")
+        cp = subprocess.run([
+            "/bin/hugo", "--destination", "/public", 
+            "--themesDir", "/themes", "--theme", "hugo-clarity"])
 
 
 check_site_exists()
