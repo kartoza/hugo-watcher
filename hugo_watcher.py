@@ -115,11 +115,11 @@ def check_themes_exists():
                 destination = shutil.copytree(
                         os.path.join(themes_template_path, file), 
                         os.path.join(themes_path, file)) 
-        else:
-            print("Copying file:", file)
-            destination = shutil.copyfile( 
-                    os.path.join(themes_template_path, file), 
-                    os.path.join(themes_path, file))
+            else:
+                print("Copying file:", file)
+                destination = shutil.copyfile( 
+                        os.path.join(themes_template_path, file), 
+                        os.path.join(themes_path, file))
 
         for root, dirs, files in os.walk("path"):
             for d in dirs:
