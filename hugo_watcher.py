@@ -6,6 +6,7 @@ import os
 import stat
 import shutil
 import mimetypes
+import sys
 
 if __name__ == "__main__":
     patterns = ["*"]
@@ -30,7 +31,7 @@ site_template_path = os.path.join(
 # all content is removed we will replace it with the default site example
 site_path = "/src"
 
-scan_lock = True
+scan_lock = False
 
 # If the user has set a theme we override the default example site
 # with the one provided in the theme
@@ -44,21 +45,29 @@ def on_created(event):
     if not scan_lock:
         print(f"{event.src_path} has been created!")
         run_hugo()
+    else:
+        print("Scan lock enabled")
 
 def on_deleted(event):
     if not scan_lock:
         print(f"File / path deleted: {event.src_path}!")
         run_hugo()
+    else:
+        print("Scan lock enabled")
 
 def on_modified(event):
     if not scan_lock:
         print(f"{event.src_path} has been modified")
         run_hugo()
+    else:
+        print("Scan lock enabled")
 
 def on_moved(event):
     if not scan_lock:
         print(f"File moved {event.src_path} to {event.dest_path}")
         run_hugo()
+    else:
+        print("Scan lock enabled")
 
 
 def check_site_exists():
