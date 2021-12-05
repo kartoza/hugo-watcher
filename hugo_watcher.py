@@ -21,24 +21,46 @@ themes_path = "/themes/"
 # Embedded in hugo watcher to have at least one default theme
 # Currently based on the hugo-clarity theme
 themes_template_path = "/themes_template/"
-# Embedded in hugo watcher to have at least one default site
-# Currently based on the hugo-clarity theme
-site_template_path = os.path.join(
-        themes_template_path,
-        'hugo-clarity',
-        'exampleSite')
 # Normally mounted as a docker volume - user can replace this content as needed
 # all content is removed we will replace it with the default site example
 site_path = "/src"
 
 scan_lock = False
 
+# There are three levels of overrides for the template path
+# The template path provides all the initial contents for the starter site
+# When the site_path is empty the site_template_path contents will
+# be copied in to it to create the default starting site.
+# The override priority is:
+#
+# 1. If the SITE_TEMPLATE_PATH env var is set, that will be used. Typically
+#    you might mount this template as a docker volume so that you can 
+#    provide your own template.
+# 2. If the SITE_TEMPLATE_PATH is NOT set and the THEME env var is set then
+#    we look in the theme dir for a folder called exampleSite and use the
+#    content we find there as the basis for the site template. The naming
+#    convention of exampleSite is from https://themes.gohugo.io/ which 
+#    provides many nice themes.
+# 3. If neither of the above are specified, we will use the exampleSite
+#    folder provided in the clarity theme which is shipped with this project
+#    by default insied the themes_template_path.
+
+# Embedded in hugo watcher to have at least one default site
+# Currently based on the hugo-clarity theme
+site_template_path = os.path.join(
+        themes_template_path,
+        'hugo-clarity',
+        'exampleSite')
+
 # If the user has set a theme we override the default example site
 # with the one provided in the theme
-if os.environ.get('THEME'):
+if os.environ.get('SITE_TEMPLATE_PATH'):
+    site_template_path = os.environ.get('SITE_TEMPLATE_PATH')
+elif os.environ.get('THEME'):
     site_template_path = os.path.join(
             themes_template_path, 
             os.environ.get('THEME'),
+            'exampleSite')
             'exampleSite')
 
 def on_created(event):

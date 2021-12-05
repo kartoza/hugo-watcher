@@ -25,6 +25,26 @@ Themes shipped by default include:
 * hugo-clarity (default)
 * elephants
 
+Starting site template:
+
+There are three levels of overrides for the template path.
+The template path provides all the initial contents for the starter site
+When the site_path is empty the site_template_path contents will
+be copied in to it to create the default starting site.
+The override priority is:
+
+1. If the SITE_TEMPLATE_PATH env var is set, that will be used. Typically
+   you might mount this template as a docker volume so that you can 
+   provide your own template.
+2. If the SITE_TEMPLATE_PATH is NOT set and the THEME env var is set then
+   we look in the theme dir for a folder called exampleSite and use the
+   content we find there as the basis for the site template. The naming
+   convention of exampleSite is from https://themes.gohugo.io/ which 
+   provides many nice themes.
+3. If neither of the above are specified, we will use the exampleSite
+   folder provided in the clarity theme which is shipped with this project
+   by default insied the themes_template_path.
+
 ## Adding themes
 
 To add a theme, you currently need to fork this repo, add a new git submodule
