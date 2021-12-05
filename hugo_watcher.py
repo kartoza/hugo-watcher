@@ -113,7 +113,9 @@ def check_site_exists():
             for directory in dirs:
                 os.chmod(os.path.join(root, directory), stat.S_IWOTH)
             for file in files:
-                os.chmod(os.path.join(root, file), stat.S_IWOTH)
+                # This breaks nginx giving a 403 on some image files
+                # disabling for now
+                #os.chmod(os.path.join(root, file), stat.S_IWOTH)
                 # If the Env var DOMAIN is set (which should typically be the
                 # case), replace any instance of example.com in the template
                 # file contents
