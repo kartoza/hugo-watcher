@@ -61,7 +61,6 @@ elif os.environ.get('THEME'):
             themes_template_path, 
             os.environ.get('THEME'),
             'exampleSite')
-            'exampleSite')
 
 def on_created(event):
     if not scan_lock:
