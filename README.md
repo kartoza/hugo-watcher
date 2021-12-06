@@ -12,6 +12,14 @@ If you are just looking for a generic Hugo image that watches a directory and
 builds when the files change, you can clone and tweak this project - probably
 you just need to tweak the provided templates.
 
+## Dev Checkout
+
+If you want to develop on this repo, make sure to checkout the submodules too...
+
+```
+git submodule update --init
+```
+
 ## Environment Variables
 
 * DOMAIN: Use the environment variable DOMAIN to replace example.com in the
