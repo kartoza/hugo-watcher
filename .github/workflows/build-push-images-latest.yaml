@@ -13,7 +13,7 @@ jobs:
     if: github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Set up QEMU
