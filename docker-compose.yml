@@ -12,7 +12,7 @@ services:
   python-http:
     image: jdkelley/simple-http-server:latest
     ports:
-      - 8000:8000
+      - 7001:8000
     volumes:
       - hugo_generated:/serve
       - hugo_themes:/themes
@@ -29,9 +29,9 @@ services:
     # whenever a source file is changed.
     image: kartoza/hugo-watcher:latest
     environment:
-      - DOMAIN=http://localhost:8000
+      - DOMAIN=http://localhost:7001
       # If you comment out theme it will default to hugo-clarity
-      #- THEME=elephants
+      - THEME=qgis
     volumes:
       # This is non user editable, generated static html
       # will be placed here.
