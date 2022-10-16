@@ -72,7 +72,7 @@ docker-compose up -d
 ## Accessing the site
 
 After running you can find the site at
-[http://localhost:8000](http://localhost:8000) and the file manager at (user
+[http://localhost:7001](http://localhost:7001) and the file manager at (user
 admin, pass admin) at [http://localhost:8001](http://localhost:8001).
 
 Create or edit markdown files in the source directory using the filemanager and
